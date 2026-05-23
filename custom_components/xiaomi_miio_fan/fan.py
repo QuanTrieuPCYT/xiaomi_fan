@@ -104,8 +104,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-SPEED_OFF = "off"
-
 ATTR_MODEL = "model"
 ATTR_BRIGHTNESS = "brightness"
 
@@ -258,7 +256,6 @@ FAN_SPEED_LEVEL3 = "Level 3"
 FAN_SPEED_LEVEL4 = "Level 4"
 
 FAN_PRESET_MODES = {
-    SPEED_OFF: range(0, 1),
     FAN_SPEED_LEVEL1: range(1, 26),
     FAN_SPEED_LEVEL2: range(26, 51),
     FAN_SPEED_LEVEL3: range(51, 76),
@@ -266,7 +263,6 @@ FAN_PRESET_MODES = {
 }
 
 FAN_PRESET_MODE_VALUES = {
-    SPEED_OFF: 0,
     FAN_SPEED_LEVEL1: 1,
     FAN_SPEED_LEVEL2: 35,
     FAN_SPEED_LEVEL3: 74,
@@ -274,7 +270,6 @@ FAN_PRESET_MODE_VALUES = {
 }
 
 FAN_PRESET_MODE_VALUES_P5 = {
-    SPEED_OFF: 0,
     FAN_SPEED_LEVEL1: 1,
     FAN_SPEED_LEVEL2: 35,
     FAN_SPEED_LEVEL3: 70,
@@ -282,14 +277,12 @@ FAN_PRESET_MODE_VALUES_P5 = {
 }
 
 FAN_PRESET_MODES_1C = {
-    SPEED_OFF: 0,
     FAN_SPEED_LEVEL1: 1,
     FAN_SPEED_LEVEL2: 2,
     FAN_SPEED_LEVEL3: 3,
 }
 
 FAN_PRESET_MODES_ZA5 = {
-    SPEED_OFF: 0,
     FAN_SPEED_LEVEL1: 25,
     FAN_SPEED_LEVEL2: 50,
     FAN_SPEED_LEVEL3: 75,
@@ -297,7 +290,6 @@ FAN_PRESET_MODES_ZA5 = {
 }
 
 FAN_PRESET_MODES_P33 = {
-    SPEED_OFF: 0,
     FAN_SPEED_LEVEL1: 1,
     FAN_SPEED_LEVEL2: 35,
     FAN_SPEED_LEVEL3: 70,
@@ -305,7 +297,6 @@ FAN_PRESET_MODES_P33 = {
 }
 
 FAN_PRESET_MODES_P39 = {
-    SPEED_OFF: 0,
     FAN_SPEED_LEVEL1: 1,
     FAN_SPEED_LEVEL2: 35,
     FAN_SPEED_LEVEL3: 70,
@@ -313,7 +304,6 @@ FAN_PRESET_MODES_P39 = {
 }
 
 FAN_PRESET_MODES_P85 = {
-    SPEED_OFF: 0,
     FAN_SPEED_LEVEL1: 1,
     FAN_SPEED_LEVEL2: 2,
     FAN_SPEED_LEVEL3: 3,
@@ -321,20 +311,15 @@ FAN_PRESET_MODES_P85 = {
 }
 
 FAN_SPEEDS_1C = list(FAN_PRESET_MODES_1C)
-FAN_SPEEDS_1C.remove(SPEED_OFF)
 
 # FIXME: Add speed level 4
 FAN_SPEEDS_ZA5 = list(FAN_PRESET_MODES_ZA5)
-FAN_SPEEDS_ZA5.remove(SPEED_OFF)
 
 FAN_SPEEDS_P33 = list(FAN_PRESET_MODES_P33)
-FAN_SPEEDS_P33.remove(SPEED_OFF)
 
 FAN_SPEEDS_P39 = list(FAN_PRESET_MODES_P39)
-FAN_SPEEDS_P39.remove(SPEED_OFF)
 
 FAN_SPEEDS_P85 = list(FAN_PRESET_MODES_P85)
-FAN_SPEEDS_P85.remove(SPEED_OFF)
 
 SUCCESS = ["ok"]
 
@@ -853,10 +838,6 @@ class XiaomiFan(XiaomiGenericDevice):
         """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
 
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
-
         if self._natural_mode:
             await self._try_command(
                 "Setting fan speed of the miio device failed.",
@@ -1052,10 +1033,6 @@ class XiaomiFanP5(XiaomiFan):
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
-
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
 
         if not self._state:
             await self._try_command(
@@ -2364,7 +2341,7 @@ class XiaomiFanP85(XiaomiFanMiot):
                 self._preset_mode = "Natural"
             else:
                 for preset_mode, value in FAN_PRESET_MODES_P85.items():
-                    if state.fan_level == value and preset_mode != SPEED_OFF:
+                    if state.fan_level == value:
                         self._preset_mode = preset_mode
                         break
 
@@ -2416,10 +2393,6 @@ class XiaomiFanP85(XiaomiFanMiot):
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
-
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
 
         if not self._state:
             await self._try_command(
