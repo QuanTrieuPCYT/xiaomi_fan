@@ -2300,7 +2300,7 @@ class XiaomiFanP85(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P85
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P85
         self._percentage = None
-        self._preset_modes = ["Natural"] + list(FAN_PRESET_MODES_P85)
+        self._preset_modes = ["Normal", "Natural"] + list(FAN_PRESET_MODES_P85)
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -2404,6 +2404,12 @@ class XiaomiFanP85(XiaomiFanMiot):
                 "Setting fan natural mode of the miio device failed.",
                 self._device.set_mode,
                 OperationModeFanP85.Nature,
+            )
+        elif preset_mode == "Normal":
+            await self._try_command(
+                "Setting fan normal mode of the miio device failed.",
+                self._device.set_mode,
+                OperationModeFanP85.Normal,
             )
         else:
             if self._natural_mode:
