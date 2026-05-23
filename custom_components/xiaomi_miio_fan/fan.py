@@ -2323,7 +2323,7 @@ class XiaomiFanP85(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P85
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P85
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_P85)
+        self._preset_modes = ["Natural"] + list(FAN_PRESET_MODES_P85)
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -2338,8 +2338,7 @@ class XiaomiFanP85(XiaomiFanMiot):
     @property
     def supported_features(self) -> int:
         return (
-            FanEntityFeature.DIRECTION
-            | FanEntityFeature.OSCILLATE
+            FanEntityFeature.OSCILLATE
             | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
@@ -2361,10 +2360,13 @@ class XiaomiFanP85(XiaomiFanMiot):
             self._natural_mode = state.mode == OperationModeFanP85.Nature.name
             self._state = state.power
 
-            for preset_mode, value in FAN_PRESET_MODES_P85.items():
-                if state.fan_level == value:
-                    self._preset_mode = preset_mode
-                    break
+            if state.mode == OperationModeFanP85.Nature.name:
+                self._preset_mode = "Natural"
+            else:
+                for preset_mode, value in FAN_PRESET_MODES_P85.items():
+                    if state.fan_level == value and preset_mode != SPEED_OFF:
+                        self._preset_mode = preset_mode
+                        break
 
             self._state_attrs.update(
                 {
@@ -2423,11 +2425,25 @@ class XiaomiFanP85(XiaomiFanMiot):
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
-        await self._try_command(
-            "Setting preset mode of the miio device failed.",
-            self._device.set_level,
-            FAN_PRESET_MODES_P85[preset_mode],
-        )
+
+        if preset_mode == "Natural":
+            await self._try_command(
+                "Setting fan natural mode of the miio device failed.",
+                self._device.set_mode,
+                OperationModeFanP85.Nature,
+            )
+        else:
+            if self._natural_mode:
+                await self._try_command(
+                    "Setting fan normal mode of the miio device failed.",
+                    self._device.set_mode,
+                    OperationModeFanP85.Normal,
+                )
+            await self._try_command(
+                "Setting preset mode of the miio device failed.",
+                self._device.set_level,
+                FAN_PRESET_MODES_P85[preset_mode],
+            )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
